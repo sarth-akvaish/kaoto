@@ -46,6 +46,21 @@ export const ExportDocumentPreviewModal: FunctionComponent<IExportDocumentPrevie
   const [documentationEntities, setDocumentationEntities] = useState<DocumentationEntity[]>(initialDocEntities);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  const normalizeZipFilename = (name: string): string => {
+    const trimmed = name.trim();
+
+    if (!trimmed) {
+      return name;
+    }
+
+    if (trimmed.toLowerCase().endsWith('.zip')) {
+      return trimmed;
+    }
+
+    const base = trimmed.replace(/\.[^/.]+$/, '');
+    return `${base}.zip`;
+  };
+
   const onUpdateDocumentationEntities = (documentationEntities: DocumentationEntity[]) => {
     documentationEntities.forEach((docEntity) => {
       if (
@@ -99,7 +114,8 @@ export const ExportDocumentPreviewModal: FunctionComponent<IExportDocumentPrevie
     const dataUrl = window.URL.createObjectURL(zipBlob);
     if (!dataUrl) return;
     const link = document.createElement('a');
-    link.download = downloadFileName;
+    const finalFileName = normalizeZipFilename(downloadFileName);
+    link.download = finalFileName;
     link.href = dataUrl;
     link.click();
   };
@@ -145,6 +161,7 @@ export const ExportDocumentPreviewModal: FunctionComponent<IExportDocumentPrevie
                       type="text"
                       value={downloadFileName}
                       onChange={(_event, value) => setDownloadFileName(value)}
+                      onBlur={() => setDownloadFileName(normalizeZipFilename(downloadFileName))}
                     />
                   </FormGroup>
                 </ToolbarItem>
